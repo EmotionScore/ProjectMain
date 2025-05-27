@@ -11,8 +11,8 @@ library(readr)
 wd <- "/Users/ulviyaabasova/Desktop/xxx"  # Replace with your actual directory
 
 # Set data and results paths
-wd_data <- paste0(wd, "/3 Replication Package/data/1_main_datasets")
-wd_results <- paste0(wd, "/3 Replication Package/results/main_paper")
+wd_data <- paste0(wd, "/data/1_main_datasets")
+wd_results <- paste0(wd, "/results/main_paper")
 
 # Load dataset
 df <- read_csv(paste0(wd_data, "/main_dataset.csv"))
@@ -36,18 +36,16 @@ final <- final %>% arrange(speech_year)
 sen <- filter(final, chamber == "senate")
 con <- filter(final, chamber == "house")
 
-
-# Create the plot
 p <- ggplot() +
   # Senate plot with fill for standard error
-  geom_line(data = sen, aes(x = speech_year, y = mean_score), color = "red", size = 1.5) +
+  geom_line(data = sen, aes(x = speech_year, y = mean_score), color = "red", linewidth = 1.5) +
   geom_ribbon(data = sen, aes(x = speech_year, ymin = mean_score - std_error, ymax = mean_score + std_error), fill = "red", alpha = 0.3) +
   
   # House plot with fill for standard error
-  geom_line(data = con, aes(x = speech_year, y = mean_score), color = "green", size = 1.5) +
+  geom_line(data = con, aes(x = speech_year, y = mean_score), color = "green", linewidth = 1.5) +
   geom_ribbon(data = con, aes(x = speech_year, ymin = mean_score - std_error, ymax = mean_score + std_error), fill = "green", alpha = 0.3) +
   
-  # Periods: Civil War, WW1, WW2, etc.
+  # Historical periods
   annotate("rect", xmin = 1861, xmax = 1865, ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.1) +
   annotate("text", x = 1860, y = 0.98, label = "Civil War", size = 6, color = "black") +
   
@@ -60,7 +58,7 @@ p <- ggplot() +
   annotate("rect", xmin = 1979, xmax = 1986, ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.1) +
   annotate("rect", xmin = 1986, xmax = 2015, ymin = -Inf, ymax = Inf, fill = "red", alpha = 0.2) +
   
-  # Labels and other aesthetics
+  # Labels and formatting
   labs(title = "Emotionality in U.S. Congress by Chamber", 
        x = "Year", 
        y = "Mean Emotionality Score") +
@@ -74,6 +72,5 @@ p <- ggplot() +
   annotate("text", x = 1987, y = 1.1, label = "C-SPAN2", size = 6) +
   annotate("text", x = 1977, y = 1.07, label = "C-SPAN1", size = 6)
 
-# Save the plot
-ggsave(paste0(wd_results, "/fig2.png"), plot = p, width = 30, height = 15)
+print(p)
 
