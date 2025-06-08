@@ -1,0 +1,59 @@
+# README – R Replication Instructions
+
+Dear User,
+
+Thank you for accessing this replication package.  
+To reproduce the figures and analyses from our project:
+
+---
+
+### 🔗 Download the Replication Package
+
+We’ve provided a ZIP file containing all necessary project files for our main project dataset which we inspired and wanted to replicate and we did 
+2 replications for 2 figures , one wordcloud and another one is time series lines chart fig1 and fig2 R which we replicated from Python to R.
+
+👉 [Download ZIP from Google Drive] https://drive.google.com/file/d/1Hv9sS-WN6Dnjclfu_bRbp5Mnsodu_wvw/view?usp=sharing
+
+1. Download the `.zip` file from the link above.
+2. Extract the folder to your Desktop or another preferred location.
+
+---
+
+### 📁 Folder Structure
+
+Inside the extracted folder, you will find:
+
+- `data` – Contains all dataset for main project
+- `models` – models which created by authors
+- `scripts/`, `results/` – Supporting files by author
+- `README.pdf` – Additional details on the project
+
+---
+
+### 📁 Our R replication script
+- "ProjectMain" inside "R_version" -you will find "fig1.R" and "fig2" u need dowload and run these scripts
+- "you will get results for figures from "xxx" folder which contains author's data and everything"
+
+---
+
+### ⚙️ How to Run the R Code
+
+1. Open RStudio (or your preferred R environment).
+2. Go to the `R_version/` directory.
+3. Open and run the main script:
+   - `fig1.R` or `fig2.R`
+
+This will generate **2 figures** that replicate the original Python results.
+
+---
+
+### 📬 Questions?
+
+For any issues, feel free to contact  
+**Ulviyya Abasova**
+
+---
+
+You can now click **"Commit changes"** (green button) to save this to your GitHub repo.
+
+Let me know if you want to make it in Markdown format (`README.md`) with styling or links!
