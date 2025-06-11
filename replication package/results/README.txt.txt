@@ -2,6 +2,10 @@ RESULTS FILES
 
 Due to GitHub file size limitations, the original results files are NOT included in this repository.
 
+https://drive.google.com/drive/folders/1ryQX35IOVO2a9JeWyXbMTL_V2293Us21
+
+This is our results file.
+
 ACCESSING THE DATA
 
 All results files can be downloaded from the original authors' Zenodo repository:
