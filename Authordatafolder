@@ -3,7 +3,11 @@
 Dear User,
 
 Thank you for accessing this replication package.  
-To reproduce the figures and analyses from our project:
+To reproduce the figures and analyses from our project: 
+
+
+Summary, first u need to dowload "xxx" folder from google drive and then come back here enter R_version folder get 2 fig.r files and run u will get 
+figrues for Authors' project as replciation
 
 ---
 
@@ -50,10 +54,8 @@ This will generate **2 figures** that replicate the original Python results.
 ### 📬 Questions?
 
 For any issues, feel free to contact  
-**Ulviyya Abasova**
+**Team**
 
 ---
 
-You can now click **"Commit changes"** (green button) to save this to your GitHub repo.
 
-Let me know if you want to make it in Markdown format (`README.md`) with styling or links!
