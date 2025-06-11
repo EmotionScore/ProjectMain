@@ -1,4 +1,4 @@
-# Emotion and Reason in Political LanguageL: Replication Package
+# Emotion and Reason in Political Language: Replication Package
 # Gennaro and Ash
 
 # Description:
@@ -8,33 +8,36 @@
 #     Modules                   ###
 ###################################
 
-
 import os
-import gensim
-from gensim.summarization.textcleaner import get_sentences
 from random import shuffle
 import nltk
-tagger = nltk.perceptron.PerceptronTagger()
-import joblib
+from nltk.tokenize import sent_tokenize
 from nltk.stem.snowball import SnowballStemmer
-stemmer = SnowballStemmer("english")
+import joblib
+from multiprocessing import Pool, freeze_support
 
+nltk.download('punkt')
+# Set correct absolute path to the data folder
+# Set correct absolute path to the data folder
+script_dir = os.path.dirname(os.path.abspath(__file__))
+data_path = os.path.join(script_dir, '../../../data')
+os.chdir(data_path)
+
+
+tagger = nltk.perceptron.PerceptronTagger()
+stemmer = SnowballStemmer("english")
 
 ###################################
 #     Working Directory         ###
 ###################################
 
-data_c = './data'
 
 
-# Upload ressources
-os.chdir(data_c)
 stopwords = joblib.load('stopwords.pkl')
-count = joblib.load('word_counts.pkl')
-
+count = joblib.load('word_counts.pkl')  # Ensure this exists, or add fallback
 
 ###################################
-#     Extract senmtences        ###
+#     Extract sentences         ###
 ###################################
 
 def extract_sentences(dataname):
@@ -42,42 +45,57 @@ def extract_sentences(dataname):
     data = [a[1] for a in data]  # keep only text, no title
 
     sentences = []
-    for doc in data:
-        sentences += get_sentences(doc)
-
-    sentences = [item for item in sentences if len(item.split()) > 1]  # drop empty
-    sentences = [gensim.utils.simple_preprocess(item) for item in sentences]
-
-    sentences = [[a for a in s if not a.isdigit()] for s in sentences]  # drop digits
-    sentences = [[a for a in s if len(a) > 2] for s in sentences]  # drop too short
     
+    for doc in data:
+        try:
+            if isinstance(doc, list):
+                doc = ' '.join(doc)
+            doc_sentences = sent_tokenize(doc)
+            sentences += doc_sentences
+        except Exception as e:
+            print(f"Error tokenizing: {e}")
+
+    # Drop empty/short sentences
+    sentences = [s for s in sentences if len(s.split()) > 1]
+
+    # Tokenize + clean
+    sentences = [nltk.word_tokenize(s.lower()) for s in sentences]
+    sentences = [[a for a in s if not a.isdigit()] for s in sentences]
+    sentences = [[a for a in s if len(a) > 2] for s in sentences]
+
+    # POS tagging and filtering
     sentences = [tagger.tag(s) for s in sentences]
     sentences = [[i[0] for i in s if i[1].startswith(('N', 'V', 'J'))] for s in sentences]
-    
-    sentences = [[stemmer.stem(i) for i in s] for s in sentences]
-    sentences = [[a for a in b if a not in stopwords] for b in sentences]
-    sentences = [[a for a in b if count[a] >= 10] for b in sentences]
 
-    sentences = [a for a in data if len(a)>1]  # eliminate empty ones
+    # Stemming
+    sentences = [[stemmer.stem(i) for i in s] for s in sentences]
+
+    # Remove stopwords and infrequent words
+    sentences = [[a for a in b if a not in stopwords] for b in sentences]
+    sentences = [[a for a in b if count.get(a, 0) >= 10] for b in sentences]
+
+    # Final cleanup
+    sentences = [s for s in sentences if len(s) > 1]
     shuffle(sentences)
 
-    lab = dataname.replace('rawspeeches_', 'sentences_')
-    print('{} processed'.format(dataname))
+    lab = dataname.replace('rawarticles_', 'sentences_')
+    print(f'{dataname} processed')
     joblib.dump(sentences, lab)
-    print('{} saved'.format(lab))
-
-
+    print(f'{lab} saved')
 
 ###################################
 #      Multiprocessing          ###
 ###################################
 
-# Upload speeches
-DATI = ['rawspeeches_indexed1.pkl', 'rawspeeches_indexed2.pkl',
-        'rawspeeches_indexed3.pkl', 'rawspeeches_indexed4.pkl']
-
+# Use actual temp files
+DATI = [
+    os.path.join(data_path, 'rawarticles_indexed1_n_temp.pkl'),
+    os.path.join(data_path, 'rawarticles_indexed2_n_temp.pkl'),
+    os.path.join(data_path, 'rawarticles_indexed3_n_temp.pkl'),
+    os.path.join(data_path, 'rawarticles_indexed4_n_temp.pkl')
+]
 DATI = [[a] for a in DATI]
-os.chdir(data_c)
+
 
 def main():
     with Pool(4) as pool:
@@ -86,4 +104,3 @@ def main():
 if __name__ == "__main__":
     freeze_support()
     main()
-
