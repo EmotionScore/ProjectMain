@@ -1,52 +1,73 @@
-# Emotion and Reason in Political LanguageL: Replication Package
+# Emotion and Reason in Political Language: Replication Package
 # Gennaro and Ash
-
+#
 # Description:
 # - Model training
-
-
-###################################
-#     Modules                   ###
-###################################
 
 import os
 import joblib
 from gensim.models import Word2Vec
 
+# ─── Paths ────────────────────────────────────────────────────────────
+# location of this script
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
-wd_data = './data'
-wd_model = './models/'
+# data lives here:
+wd_data = os.path.normpath(os.path.join(script_dir, '../../../data'))
 
+# model output goes here:
+wd_model = os.path.normpath(os.path.join(script_dir, '../../../models'))
+os.makedirs(wd_model, exist_ok=True)
 
-###################################
-#     Upload speeches           ###
-###################################
-
-os.chdir(wd_data)
-
-DATI = ['sentences_indexed1.pkl', 'sentences_indexed2.pkl',
-        'sentences_indexed3.pkl', 'sentences_indexed4.pkl']
+# ─── Load Sentence Data ───────────────────────────────────────────────
+# no need to cd if you use full paths:
+sentence_files = [
+    'sentences_indexed1_n_temp.pkl',
+    'sentences_indexed2_n_temp.pkl',
+    'sentences_indexed3_n_temp.pkl',
+    'sentences_indexed4_n_temp.pkl'
+]
 
 dataset = []
-for dataname in DATI:
-	data = joblib.load(dataname)
-	dataset.append(data)
+for fname in sentence_files:
+    path = os.path.join(wd_data, fname)
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Missing sentence file: {path}")
+    data = joblib.load(path)
+    if not isinstance(data, list):
+        raise ValueError(f"Expected list in {path}, got {type(data)}")
+    dataset.extend(data)
 
-###################################
-#    Model training             ###
-###################################
+if not dataset:
+    raise ValueError("Dataset is empty—no sentences to train on.")
+print(f"Loaded {len(dataset)} sentences.")
 
-w2v = Word2Vec(dataset,  # iterator that loops over tokenized sentences
-               workers=8,  # Number of threads to run in parallel
-               size=300,  # Word vector dimensionality
-               min_count=10,  # Minimum word count
-               window = 8, # Context window size - how many words to use as a context
-               sample = 1e-3, # Downsample setting for frequent words
-               iter = 10 # epochs
-               )
+# ─── Model Training ───────────────────────────────────────────────────
+# 1) instantiate (no data yet)
+w2v = Word2Vec(
+    vector_size=300,   # dimensionality
+    workers=8,         # threads
+    min_count=10,      # ignore infrequent words
+    window=8,          # context window
+    sample=1e-3        # downsample frequent words
+)
 
-w2v.init_sims(replace=True)
+# 2) build vocabulary
+print("Building vocabulary…")
+w2v.build_vocab(dataset, progress_per=10000)
+print(f"Vocabulary size: {len(w2v.wv)} tokens.")
 
-# Save
-w2v.save(wd_model + 'w2v-vectors_8_300.pkl')
+# 3) train
+print("Training model…")
+w2v.train(
+    dataset,
+    total_examples=w2v.corpus_count,
+    epochs=10,
+    report_delay=1
+)
+print("Training complete.")
 
+# ─── Save Model ───────────────────────────────────────────────────────
+out_path = os.path.join(wd_model, 'w2v-vectors_8_300.pkl')
+w2v.save(out_path)
+print(f"Model saved to {out_path}")
