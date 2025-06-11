@@ -1,123 +1,83 @@
-# Emotion and Reason in Political Language
-# -- Replication Package
+# Emotion and Reason in Political Language: Replication Package
 # Gennaro and Ash
-# 2021
 
 # Description:
-# - Main Emotionality score in speeches
-
+# - Find the document vectors for the cognition and affect dictionaries
+# - These centroids are SIF weighted averages
 
 ###################################
 #     Modules                   ###
 ###################################
-
 import os
 import joblib
 from gensim.models import Word2Vec
 import numpy as np
-import pandas as pd
-from scipy.spatial.distance import cosine
-import glob
-from multiprocessing import Pool, freeze_support
-
 
 ###################################
-#     Working Directory         ###
+#     Fixed Paths               ###
 ###################################
-
-wd_data = '../../../data/3_auxiliary_data'  # set the data directory
-wd_results = '../../../results/appendix'  # set the results directory
-wd_models = '../../../models'  # set the results directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.normpath(os.path.join(script_dir, '../../../data'))
+model_dir = os.path.normpath(os.path.join(script_dir, '../../../models'))
+results_dir = os.path.normpath(os.path.join(script_dir, '../../../results'))
+aux_dir = os.path.join(data_dir, '3_auxiliary_data')
+os.makedirs(aux_dir, exist_ok=True)
 
 ###################################
 # Upload all elements           ###
 ###################################
+# Load dictionaries from results folder
+dict_dir = os.path.join(results_dir, 'dictionaries')
+cog_path = os.path.join(dict_dir, 'dictionary_cognition.pkl')
+aff_path = os.path.join(dict_dir, 'dictionary_affect.pkl')
 
+if not os.path.exists(cog_path) or not os.path.exists(aff_path):
+    raise FileNotFoundError(f"Dictionary files not found at {cog_path} or {aff_path}")
 
-w2v = Word2Vec.load(wd_models + '/w2v-vectors_8_300.pkl', mmap='r')
+cognition = joblib.load(cog_path)
+affect = joblib.load(aff_path)
 
-freq = joblib.load(wd_data + '/word_freqs.pkl')
-affect = joblib.load(wd_data + '/affect_centroid.pkl')
-cognition = joblib.load(wd_data + '/cog_centroid.pkl')
+# Load word vectors
+w2v_path = os.path.join(model_dir, 'w2v-vectors_8_300.pkl')
+if not os.path.exists(w2v_path):
+    raise FileNotFoundError(f"Word2Vec model not found at {w2v_path}")
+w2v = Word2Vec.load(w2v_path, mmap='r')
+model = w2v.wv
 
-
-###################################
-# Define Functions              ###
-###################################
-
-def documentvecweight(lista):
-    out = []
-    lista = [i for i in lista if len(i[1]) > 0]
-    for s in lista:
-        vecs = [w2v.wv[w] * freq[w] for w in s[1] if w in w2v.wv]
-        if len(vecs) == 0:
-            a = np.nan
-            c = np.nan
-        else:
-            v = np.mean(vecs, axis=0)  # take mean
-            v = v.reshape(1, -1)
-            v = v.tolist()
-
-            a = cosine(v, affect)
-            c = cosine(v, cognition)
-            score = (1 + 1 - a) / (1 + 1 - c)
-        out.append([s[0], a, c, score])
-    return out
-
-
-DATA = glob.glob("speeches_indexed_clean1*.pkl") + \
-    glob.glob("speeches_indexed_clean2*.pkl") + \
-    glob.glob("speeches_indexed_clean3*.pkl") + \
-    glob.glob("speeches_indexed_clean4*.pkl")
-
-
-def main_function(dataname):
-    data = joblib.load(dataname)
-    data = documentvecweight(data)
-    lab = dataname.replace('speeches_indexed_clean', 'temp_distances_main_')
-    joblib.dump(data, lab)
-
+# Load word frequencies (located at data root)
+freqs_path = os.path.join(data_dir, 'word_freqs.pkl')
+if not os.path.exists(freqs_path):
+    raise FileNotFoundError(f"Word frequencies file not found at {freqs_path}")
+freqs = joblib.load(freqs_path)
 
 ###################################
-#      Multiprocessing          ###
+# Find the centroid             ###
 ###################################
+def find_centroid(tokens, model, freqs):
+    # Compute weighted vectors
+    vecs = []
+    for w in tokens:
+        if w in model and w in freqs:
+            vecs.append(model[w] * freqs.get(w, 1))
+    # If no vectors found, return zero vector
+    if not vecs:
+        print(f"Warning: No vectors for tokens {tokens}; returning zero vector.")
+        # return a zero vector matching model vector size
+        return np.zeros((1, model.vector_size))
+    mat = np.vstack(vecs)
+    centroid = mat.mean(axis=0).reshape(1, -1)
+    return centroid
 
-DATA = [[a] for a in DATA]
-pools = len(DATA)
-os.chdir(data_c)
-
-
-def main():
-    with Pool(pools) as pool:
-        pool.starmap(main_function, DATA)
-
-
-if __name__ == "__main__":
-    freeze_support()
-    main()
-
+c_affect = find_centroid(affect, model, freqs)
+c_cognition = find_centroid(cognition, model, freqs)
 
 ###################################
-#      Recompose everything     ###
+# Save centroids                ###
 ###################################
+aff_out = os.path.join(aux_dir, 'affect_centroid.pkl')
+cog_out = os.path.join(aux_dir, 'cog_centroid.pkl')
+joblib.dump(c_affect, aff_out)
+joblib.dump(c_cognition, cog_out)
 
-DATA = glob.glob('temp_distances_main_*.pkl')
-
-tot = []
-for dataname in DATA:
-    d = joblib.load(dataname)
-    tot = tot + d
-
-tot = pd.DataFrame(tot)
-tot.columns = ['title', 'affect_d', 'cognition_d', 'score']
-joblib.dump(tot, wd_data + '/distances_10epochs.pkl')
-
-
-os.remove('distances1.pkl')
-os.remove('distances2a.pkl')
-os.remove('distances2b.pkl')
-os.remove('distances3.pkl')
-os.remove('distances4a.pkl')
-os.remove('distances4b.pkl')
-os.remove('distances4c.pkl')
-os.remove('distances4d.pkl')
+print(f"Saved affect centroid to {aff_out}")
+print(f"Saved cognition centroid to {cog_out}")
