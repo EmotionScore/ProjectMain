@@ -1,36 +1,50 @@
 
 
-# ProjectMain
+# Reproducing results of research "Emotion and reason in political language" & replication on new dataset
 
-Welcome! This guide will help you set up and run the replication pipeline for “Emotion and Reason in Political Language.”
+Welcome! This file provides overview on the project, as well as detailed instructions on running code present in the repository. Make sure you eead carefully, before reproducing results.
+
+## Aim of the project
+This project was inspired by article “Emotion and Reason in Political Language” (2022) by Gennaro, G., & Ash, E. Authors of above research are sharing all data & codes used in research with public: https://zenodo.org/records/5748084   
+Project consists of two parts:   
+1. in the first one, authors reproduce results of abovementioned article - the figures used in the final article. Codes are translated from python to R.
+2. In the second part, authors set up and run the replication pipeline, inspired by “Emotion and Reason in Political Language", but using other dataset.
 
 ---
 
-## 📥 1. Download & Prepare Data
+## Instructions
+### 1. Reproducing figures from article
 
-You need to dowload replication package folder to you rdekstop, we worked only " scripts- data creation inside 3 folder and 4 files"
+1. Download replication package from: https://drive.google.com/file/d/1Hv9sS-WN6Dnjclfu_bRbp5Mnsodu_wvw/view?usp=sharing  
+2. Unzip replication package to convenient location. Inside the extracted folder, you will find:
+- `data` – Contains all dataset for main project
+- `models` – models which created by authors
+- `scripts/`, `results/` – Supporting files by author  
+3. R codes for figures replication are available in R_version folder. Open the scripts and adjust working directory as well as paths to data files  
+   Important! Keep the original structure of files from replication package to avoidadditional steps
+4. Open and run the main script:
+   - `fig1.R` or `fig2.R`
+This will generate figures that replicate the original Python results.
 
-1) Download dataset and liwc file, py file  and add them to data folder inside replciation package -Access the dataset from the following Google Drive link:
+### 2. Replicating pipeline on other dataset  
+
+1) Dowload the replication_package folder to your dekstop
+2) Download dataset and add files to folder "data" inside replciation package. Access the dataset from the following Google Drive link:
 https://drive.google.com/drive/folders/1WAEHlOCzH-92BbyZEeYKXs8HuzjORlL7
-https://drive.google.com/file/d/1k2xxOa5JQFBqtN0bFdcn6pjNG-pbJH31/view?usp=sharing
  
-3) Then go scripts folder inside create "1_document_data_pre_processing" folder and 4 py files there(1_extract_articles, indexed speeches,word_fre,final article clean.py)
+3) Then go scripts folder inside create "1_document_data_pre_processing" folder and 4 py files there, following the numerical order (1_extract_articles, 2_indexed speeches, 3_word_frequencies, 4_final_article_cleaning.py)
 
-4) Also dowload relative python packages and libraris befor running
+4) Also dowload relative python packages and libraris befor running. Be mindful about packages compatibility. To ensure code runs correctly, we recommend using necessary packages in versions:  
+numpy	1.24.4  
+scipy	1.10.1  
+spacy	3.5.3  
+thinc	8.1.10  
+h5py	3.9.0  
+nltk	3.8.1  
 
-5) First run 1_pre_processing_document (which u create and 4 py files there )
-6) Run first inside data folder "create_stopwords.py"
-7) Run scripts fodler inside model training folder 2 py files
-8) rUN DICTIONARIES FODLER INSIDE PY FILE
-9) RUN EMOTIONALITY SOCRE FOLDER INSIDE PY FILES
-
-You will get all results but please followe the steps. First dowload dataset, liwc, create_stopwords.py and add data folder inside replciation package
-then 4 py files inside scripts create 1_data_pre_processing folder add them and run
-then come back to data folder run "create_stopwords.py" then go scripts folder inside of model training run them
-then 3-4 folders.
+5) Continue running scripts from folder 2_model training and 3_create_dictionaries, following the numerical order.. The outputs of the scripts will be stored in folders: "data", "models" and "results"
 
 
-You don't need 2nd folder -"main paper" and "appendixes" inside replciatipn package . 
 
 
 
