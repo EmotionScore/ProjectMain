@@ -18,7 +18,6 @@ from multiprocessing import Pool, freeze_support
 
 nltk.download('punkt')
 # Set correct absolute path to the data folder
-# Set correct absolute path to the data folder
 script_dir = os.path.dirname(os.path.abspath(__file__))
 data_path = os.path.join(script_dir, '../../../data')
 os.chdir(data_path)
@@ -32,9 +31,9 @@ stemmer = SnowballStemmer("english")
 ###################################
 
 
-
 stopwords = joblib.load('stopwords.pkl')
-count = joblib.load('word_counts.pkl')  # Ensure this exists, or add fallback
+word_counts_path = os.path.join('word_frequencies', 'word_counts.pkl')
+count = joblib.load(word_counts_path)
 
 ###################################
 #     Extract sentences         ###
@@ -42,7 +41,7 @@ count = joblib.load('word_counts.pkl')  # Ensure this exists, or add fallback
 
 def extract_sentences(dataname):
     data = joblib.load(dataname)
-    data = [a[1] for a in data]  # keep only text, no title
+    data = [a[1] for a in data] 
 
     sentences = []
     
